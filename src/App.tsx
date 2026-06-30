@@ -3,7 +3,7 @@ import './App.css'
 import apiKeyScreenshot from './assets/novita-get-api-key-3.webp'
 import vercelCliInstallResult from './assets/vercel-cli-install-result.png'
 
-type SlideMode = 'cover' | 'install' | 'image' | 'section' | 'showcase' | 'steps' | 'prompt' | 'terminal' | 'matrix' | 'timeline' | 'closing'
+type SlideMode = 'cover' | 'install' | 'image' | 'section' | 'showcase' | 'steps' | 'prompt' | 'terminal' | 'matrix' | 'timeline' | 'artifact' | 'closing'
 
 type InstallOption = {
   name: string
@@ -36,6 +36,10 @@ type Slide = {
     src: string
     alt: string
   }
+  artifact?: {
+    src: string
+    label: string
+  }
   cta?: {
     label: string
     href: string
@@ -52,7 +56,7 @@ const slides: Slide[] = [
     eyebrow: 'Agenda',
     title: 'AI coding workflow',
     body: '',
-    points: ['Set up Kilo Code', 'Connect Novita AI models', 'Build a portfolio site', 'Deploy with Vercel', 'Create your own HTML sites'],
+    points: ['Set up Kilo Code', 'Connect Novita AI models', 'Build a portfolio site', 'Deploy with Vercel', 'Create HTML slides'],
     mode: 'cover',
   },
   {
@@ -126,6 +130,7 @@ const slides: Slide[] = [
     eyebrow: 'Kilo Gateway',
     title: 'Use Novita in Kilo Code',
     body: '',
+    points: ['Open provider settings', 'Paste Novita API key', 'Choose a model'],
     mode: 'section',
   },
   {
@@ -133,22 +138,24 @@ const slides: Slide[] = [
     eyebrow: 'Build',
     title: 'Build a portfolio site',
     body: '',
-    mode: 'section',
+    prompt: 'Create a personal portfolio for a developer using React and Vite. Include projects, contact links, responsive design, and a polished visual direction.',
+    points: ['Projects', 'Contact links', 'Responsive layout'],
+    mode: 'matrix',
   },
   {
     kicker: '05 / Design Direction',
     eyebrow: 'Brief',
     title: 'Specify taste',
     body: '',
-    prompt: 'Design direction: editorial but practical, dark text on a warm off-white background, sharp typography, project cards that show evidence, no generic SaaS gradient hero, no stock imagery, excellent spacing on mobile, and clear calls to LinkedIn, GitHub, and email.',
-    points: ['Say what to avoid', 'Name required links', 'Describe the audience', 'Request responsive checks'],
+    prompt: 'Make it editorial, practical, responsive, and not generic SaaS. Include GitHub, LinkedIn, email, and project evidence.',
+    points: ['Taste', 'Audience', 'Links', 'Mobile'],
     mode: 'matrix',
   },
   {
     kicker: '06 / Deploy',
     eyebrow: 'Vercel',
     title: 'Deploy with Vercel',
-    body: '',
+    body: 'All you need is prompt',
     promptCards: [
       {
         label: 'Install prompt',
@@ -159,11 +166,11 @@ const slides: Slide[] = [
         },
       },
       {
-        label: 'Login prompt',
+        label: 'Login',
         prompt: 'How can I login my vercel account?',
       },
       {
-        label: 'Deploy prompt',
+        label: 'Deploy',
         prompt: 'use Vercel CLI to deploy my portfolio website',
       },
     ],
@@ -172,26 +179,34 @@ const slides: Slide[] = [
   {
     kicker: '07 / HTML Slides',
     eyebrow: 'Create',
-    title: 'Create your own HTML slides',
-    body: 'HTML slides are agent-friendly presentation software: editable as code, easy to preview, simple to deploy, and ready for live iteration. This is where future presentations are heading.',
-    points: ['Versioned source', 'Live components', 'Fast restyling', 'Deployable deck'],
+    title: 'HTML slides',
+    body: 'Agent-friendly. Editable. Deployable.',
+    points: ['Agent-friendly', 'Editable', 'Previewable', 'Deployable'],
+    prompt: 'Create an HTML slide deck introducing Novita AI. Use https://novita.ai for reference. Make it concise, keyboard navigable, responsive, and deployable.',
     mode: 'showcase',
   },
   {
-    kicker: '08 / HTML Slide Prompt',
-    eyebrow: 'Prompt',
-    title: 'Generate a deck',
-    body: '',
-    prompt: 'Create an HTML slide deck for this workshop. Make it keyboard navigable, clean, responsive, easy for an agent to edit, and deployable like a normal website.',
-    points: ['Define the story', 'Use reusable slide data', 'Ask for responsive checks', 'Run and preview locally'],
-    mode: 'prompt',
+    kicker: '08 / Result',
+    eyebrow: 'Artifact',
+    title: 'Generated deck',
+    body: 'One prompt became a working deck, with visible token cost.',
+    artifact: {
+      src: '/novita-ai-slides.html',
+      label: 'Open deck',
+    },
+    image: {
+      src: '/Screenshot 2026-06-29 at 15.45.37.png',
+      alt: 'Token usage and price for one prompt',
+    },
+    points: ['Working HTML deck', 'Token usage visible', 'Ready to share'],
+    mode: 'artifact',
   },
   {
-    kicker: '09 / Close',
-    eyebrow: 'Takeaway',
-    title: 'Repeat the loop',
-    body: '',
-    points: ['Give context', 'Generate code', 'Verify locally', 'Deploy', 'Reuse the result'],
+    kicker: '09 / Thanks',
+    eyebrow: 'Next',
+    title: 'Thanks',
+    body: 'Now build your own.',
+    prompt: 'Pick a product, paste a reference link, and ask Kilo Code to turn it into a deployable HTML slide deck.',
     mode: 'closing',
   },
 ]
@@ -217,6 +232,7 @@ function App() {
   const [copiedPrompt, setCopiedPrompt] = useState<string | null>(null)
   const slide = slides[index]
   const progress = useMemo(() => ((index + 1) / slides.length) * 100, [index])
+  const isPromptOnly = slide.mode === 'prompt' && !slide.points && !slide.prompt && !slide.promptCards && !slide.code && !slide.image && !slide.cta
 
   const copyPrompt = async (prompt: string, id = 'default') => {
     if (navigator.clipboard) {
@@ -254,7 +270,7 @@ function App() {
   }, [])
 
   return (
-    <main className={`deck deck--${slide.mode}${slide.promptCards ? ' deck--prompt-flow' : ''}`}>
+    <main className={`deck deck--${slide.mode}${slide.promptCards ? ' deck--prompt-flow' : ''}${isPromptOnly ? ' deck--prompt-only' : ''}`}>
       <div className="grid-field" aria-hidden="true" />
       <header className="topbar">
         <div className="wordmark">
@@ -350,10 +366,25 @@ function App() {
             </a>
           )}
 
-          {slide.mode !== 'image' && slide.image && (
+          {slide.mode !== 'image' && !slide.artifact && slide.image && (
             <figure className="image-frame">
               <img src={slide.image.src} alt={slide.image.alt} />
             </figure>
+          )}
+
+          {slide.artifact && (
+            <div className="artifact-preview">
+              <iframe src={slide.artifact.src} title="Generated Novita AI HTML slide deck preview" tabIndex={-1} />
+              {slide.image && (
+                <figure className="cost-frame">
+                  <img src={slide.image.src} alt={slide.image.alt} />
+                </figure>
+              )}
+              <a className="slide-cta" href={slide.artifact.src} target="_blank" rel="noopener noreferrer">
+                {slide.artifact.label}
+                <span aria-hidden="true">→</span>
+              </a>
+            </div>
           )}
 
           {slide.code && (
